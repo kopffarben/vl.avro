@@ -131,6 +131,7 @@ namespace Chr.Avro.Serialization
                                     var p = Expression.Call(typeInfo, getProperty, n);
                                     inner = Expression.Convert(Expression.Call(p, getValue, argument), pmatch.Type.ClrType);
                                 }
+
                                 try
                                 {
                                     writes.Add(Expression.Call(context.Writer, writePropertyName, Expression.Constant(field.Name)));
@@ -146,7 +147,6 @@ namespace Chr.Avro.Serialization
                         {
                             var members = type.GetMembers(MemberVisibility);
 #endif
-
 
                             foreach (var field in recordSchema.Fields)
                             {

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="M4qPqCLDydcPEGje75Yepq" LanguageVersion="2021.4.11.1117" Version="0.128">
+<Document xmlns:p="property" Id="M4qPqCLDydcPEGje75Yepq" LanguageVersion="2021.4.11.1152" Version="0.128">
   <Patch Id="SONfrgcPJTBLESnJMvRx6O">
     <Canvas Id="My6BHu02TMINXIldtMwVvd" DefaultCategory="Main" CanvasType="FullCategory">
       <!--
@@ -865,13 +865,13 @@
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="TgmMJhDsjX9NhV47lT1lV5" Location="VL.CoreLib" Version="2021.4.11-1117-g8457250987" />
+  <NugetDependency Id="TgmMJhDsjX9NhV47lT1lV5" Location="VL.CoreLib" Version="2021.4.11-1152-g29d61bbe61" />
   <NugetDependency Id="NOePSNbYkFuNpPRRLjRX4U" Location="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
   <NugetDependency Id="R3g4kocHL8FOljL70nUwMf" Location="System.ComponentModel.Annotations" Version="5.0.0" />
   <NugetDependency Id="GShy4AjzbBGLEHguaUKV78" Location="System.Runtime.CompilerServices.Unsafe" Version="4.7.0" />
   <NugetDependency Id="FPVadIP6L85MKXVYF3rTu8" Location="System.Threading.Tasks.Extensions" Version="4.5.2" />
   <PlatformDependency Id="JUzS8pRUYKuL7GEWvljCa8" Location="System" />
-  <NugetDependency Id="JwenKMZl0CbNkG904V4CSL" Location="VL.Core" Version="2021.4.11-1117-g8457250987" />
+  <NugetDependency Id="JwenKMZl0CbNkG904V4CSL" Location="VL.Core" Version="2021.4.11-1152-g29d61bbe61" />
   <PlatformDependency Id="DIOWjN59FBwOn9u6Bryzwj" Location="./bin/Debug/netstandard2.0/Chr.Avro.Binary.dll" />
   <PlatformDependency Id="NsjOcTstI2ZQSqiUI8iE4u" Location="./bin/Debug/netstandard2.0/Chr.Avro.dll" />
   <PlatformDependency Id="OCCjhC94EPNQTmKtdCx4EL" Location="./bin/Debug/netstandard2.0/Chr.Avro.Fixtures.dll" />

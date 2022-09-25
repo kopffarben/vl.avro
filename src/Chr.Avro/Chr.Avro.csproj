@@ -16,7 +16,7 @@
   <Choose>
     <When Condition="$(DefineConstants.Contains('VL'))">
       <ItemGroup>
-        <PackageReference Include="VL.Core" Version="2021.4.11-1125-g901b01e195" />
+        <PackageReference Include="VL.Core" Version="2021.4.11-1152-g29d61bbe61" />
         <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.0" />
       </ItemGroup>
     </When>
