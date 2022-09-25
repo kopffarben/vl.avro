@@ -13,4 +13,14 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
 
+  <Choose>
+    <When Condition="$(DefineConstants.Contains('VL'))">
+      <ItemGroup>
+        <PackageReference Include="VL.Core" Version="2021.4.11-1125-g901b01e195" />
+        <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.0" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  
 </Project>

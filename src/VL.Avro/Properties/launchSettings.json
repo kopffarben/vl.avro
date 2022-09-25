@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "VL.Avro": {
+      "commandName": "Project"
+    },
+    "VVVV": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\vvvv\\vvvv_gamma_2021.4.11-1117-g8457250987\\vvvv.exe",
+      "commandLineArgs": "-o avro_01.vl",
+      "workingDirectory": "E:\\OneDrive\\_DEV\\_EDemokratie\\vl.avro\\src\\VL.Avro"
+    }
+  }
+}

@@ -1,21 +1,49 @@
 <Project>
 
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\Chr.Avro.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>8.0.0.0</AssemblyVersion>
-    <Authors>C.H. Robinson</Authors>
-    <Company>C.H. Robinson</Company>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <LangVersion>10.0</LangVersion>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <SignAssembly>true</SignAssembly>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <Version>9.2.0</Version>
+    <DefineConstants>VL</DefineConstants>
   </PropertyGroup>
+
+  <Choose>
+    <When Condition="$(DefineConstants.Contains('VL'))">
+      <PropertyGroup>
+        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\Chr.Avro.snk</AssemblyOriginatorKeyFile>
+        <AssemblyVersion>8.0.0.0</AssemblyVersion>
+        <Authors>C.H. Robinson,Johannes Schmidt</Authors>
+        <Company>C.H. Robinson,Kopffarben</Company>
+        <!--<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>-->
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <LangVersion>10.0</LangVersion>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <SignAssembly>false</SignAssembly>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <Version>9.2.0</Version>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\Chr.Avro.snk</AssemblyOriginatorKeyFile>
+        <AssemblyVersion>8.0.0.0</AssemblyVersion>
+        <Authors>C.H. Robinson</Authors>
+        <Company>C.H. Robinson</Company>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <LangVersion>10.0</LangVersion>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <SignAssembly>true</SignAssembly>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <Version>9.2.0</Version>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+  
+  
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">

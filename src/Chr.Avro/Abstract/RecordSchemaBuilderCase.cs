@@ -1,5 +1,10 @@
 namespace Chr.Avro.Abstract
 {
+
+#if VL
+    using VL.Core;
+    using VL.Lib.Collections;
+#endif
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -96,6 +101,38 @@ namespace Chr.Avro.Abstract
                     throw new InvalidOperationException($"A schema for {type} already exists on the schema builder context.", exception);
                 }
 
+#if VL
+                IVLTypeInfo typeInfo = VLFactory.Current.GetTypeInfo(type);
+                IVLObject defaults = null;
+                if (typeof(IVLObject).IsAssignableFrom(type))
+                {
+                    defaults = (IVLObject)typeInfo.GetDefaultValue();
+                }
+
+                foreach (var property in typeInfo.AllProperties.ToList())
+                {
+                    var field = new RecordField(property.Name, SchemaBuilder.BuildSchema(property.Type.ClrType, context));
+
+                    if (property.GetAttributes<DescriptionAttribute>().Any())
+                    {
+                        field.Documentation = property.GetAttributes<DescriptionAttribute>().FirstOrDefault().Description;
+                    }
+                    if (property.GetAttributes<DefaultValueAttribute>().Any())
+                    {
+                        field.Default = new ObjectDefaultValue<object>(property.GetAttributes<DefaultValueAttribute>().FirstOrDefault().Value, field.Type);
+                    }
+                    else if (defaults != null)
+                    {
+                        field.Default = new ObjectDefaultValue<object>(property.GetValue(defaults), field.Type);
+                    }
+                    if (property.GetAttributes<RangeAttribute>().Any())
+                    {
+                        field.Type = ApplyRangeAttribute(field.Type, property.GetAttributes<RangeAttribute>().FirstOrDefault());
+                    }
+
+                    recordSchema.Fields.Add(field);
+                }
+#else
                 foreach (var member in type.GetDataMembers(MemberVisibility)
                     .OrderBy(member => type.HasAttribute<DataContractAttribute>()
                         ? member.GetAttribute<DataMemberAttribute>()?.Order ?? 0
@@ -146,7 +183,7 @@ namespace Chr.Avro.Abstract
 
                     recordSchema.Fields.Add(field);
                 }
-
+#endif
                 return SchemaBuilderCaseResult.FromSchema(schema);
             }
             else

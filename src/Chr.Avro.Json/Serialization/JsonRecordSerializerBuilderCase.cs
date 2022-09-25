@@ -9,6 +9,10 @@ namespace Chr.Avro.Serialization
     using System.Text.Json;
     using Chr.Avro.Abstract;
     using Microsoft.CSharp.RuntimeBinder;
+#if VL
+    using VL.Core;
+    using VL.Core.CompilerServices;
+#endif
 
     using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
 
@@ -77,7 +81,9 @@ namespace Chr.Avro.Serialization
                     // then build/set the delegate if it hasn’t been built yet:
                     if (parameter == reference)
                     {
+#if !VL
                         var members = type.GetMembers(MemberVisibility);
+#endif
 
                         var writeStartObject = typeof(Utf8JsonWriter)
                             .GetMethod(nameof(Utf8JsonWriter.WriteStartObject), Type.EmptyTypes);
@@ -94,23 +100,21 @@ namespace Chr.Avro.Serialization
                             Expression.Call(context.Writer, writeStartObject),
                         };
 
-                        foreach (var field in recordSchema.Fields)
+#if VL
+                        if (typeof(IVLObject).IsAssignableFrom(type))
                         {
-                            var match = members.SingleOrDefault(member => IsMatch(field, member));
+                            var typeInfo = Expression.PropertyOrField(Expression.Convert(argument, typeof(IVLObject)), nameof(IVLObject.Type));
+                            var getProperty = typeof(IVLTypeInfo).GetMethod(nameof(IVLTypeInfo.GetProperty), new[] { typeof(string) });
+                            var getValue = typeof(IVLPropertyInfo).GetMethod(nameof(IVLPropertyInfo.GetValue), new[] { typeof(IVLObject) });
 
-                            Expression inner;
+                            var properties = VLFactory.Current.GetTypeInfo(type).AllProperties.ToList();
 
-                            if (match == null)
+                            foreach (var field in recordSchema.Fields)
                             {
-                                // if the type could be dynamic, attempt to use a dynamic getter:
-                                if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(type) || type == typeof(object))
-                                {
-                                    var flags = CSharpBinderFlags.None;
-                                    var infos = new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) };
-                                    var binder = Binder.GetMember(flags, field.Name, type, infos);
-                                    inner = Expression.Dynamic(binder, typeof(object), value);
-                                }
-                                else
+                                var pmatch = properties.SingleOrDefault(property => IsMatch(field, property));
+                                Expression inner;
+
+                                if (pmatch == null)
                                 {
                                     if (field.Default is not null)
                                     {
@@ -121,23 +125,75 @@ namespace Chr.Avro.Serialization
                                         throw new UnsupportedTypeException(type, $"{type} does not have a field or property that matches the {field.Name} field on {recordSchema.FullName}.");
                                     }
                                 }
-                            }
-                            else
-                            {
-                                inner = Expression.PropertyOrField(argument, match.Name);
-                            }
-
-                            try
-                            {
-                                writes.Add(Expression.Call(context.Writer, writePropertyName, Expression.Constant(field.Name)));
-                                writes.Add(SerializerBuilder.BuildExpression(inner, field.Type, context));
-                            }
-                            catch (Exception exception)
-                            {
-                                throw new UnsupportedTypeException(type, $"{(match is null ? "A" : $"The {match.Name}")} member on {type} could not be mapped to the {field.Name} field on {recordSchema.FullName}.", exception);
+                                else
+                                {
+                                    var n = Expression.Constant(pmatch.Name);
+                                    var p = Expression.Call(typeInfo, getProperty, n);
+                                    inner = Expression.Convert(Expression.Call(p, getValue, argument), pmatch.Type.ClrType);
+                                }
+                                try
+                                {
+                                    writes.Add(Expression.Call(context.Writer, writePropertyName, Expression.Constant(field.Name)));
+                                    writes.Add(SerializerBuilder.BuildExpression(inner, field.Type, context));
+                                }
+                                catch (Exception exception)
+                                {
+                                    throw new UnsupportedTypeException(type, $"{(pmatch is null ? "A" : $"The {pmatch.Name}")} member on {type} could not be mapped to the {field.Name} field on {recordSchema.FullName}.", exception);
+                                }
                             }
                         }
+                        else
+                        {
+                            var members = type.GetMembers(MemberVisibility);
+#endif
 
+
+                            foreach (var field in recordSchema.Fields)
+                            {
+                                var match = members.SingleOrDefault(member => IsMatch(field, member));
+
+                                Expression inner;
+
+                                if (match == null)
+                                {
+                                    // if the type could be dynamic, attempt to use a dynamic getter:
+                                    if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(type) || type == typeof(object))
+                                    {
+                                        var flags = CSharpBinderFlags.None;
+                                        var infos = new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) };
+                                        var binder = Binder.GetMember(flags, field.Name, type, infos);
+                                        inner = Expression.Dynamic(binder, typeof(object), value);
+                                    }
+                                    else
+                                    {
+                                        if (field.Default is not null)
+                                        {
+                                            inner = Expression.Constant(field.Default.ToObject<dynamic>());
+                                        }
+                                        else
+                                        {
+                                            throw new UnsupportedTypeException(type, $"{type} does not have a field or property that matches the {field.Name} field on {recordSchema.FullName}.");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    inner = Expression.PropertyOrField(argument, match.Name);
+                                }
+
+                                try
+                                {
+                                    writes.Add(Expression.Call(context.Writer, writePropertyName, Expression.Constant(field.Name)));
+                                    writes.Add(SerializerBuilder.BuildExpression(inner, field.Type, context));
+                                }
+                                catch (Exception exception)
+                                {
+                                    throw new UnsupportedTypeException(type, $"{(match is null ? "A" : $"The {match.Name}")} member on {type} could not be mapped to the {field.Name} field on {recordSchema.FullName}.", exception);
+                                }
+                            }
+#if VL
+                        }
+#endif
                         writes.Add(Expression.Call(context.Writer, writeEndObject));
 
                         var expression = Expression.Lambda(

@@ -6,6 +6,7 @@ namespace Chr.Avro.Serialization
     using System.Text.RegularExpressions;
     using Chr.Avro.Abstract;
     using Chr.Avro.Infrastructure;
+    using VL.Core;
 
     /// <summary>
     /// Provides a base implementation for serializer builder cases that match <see cref="RecordSchema" />.
@@ -14,6 +15,25 @@ namespace Chr.Avro.Serialization
     {
         private static readonly Regex FuzzyCharacters = new(@"[^A-Za-z0-9]");
 
+
+#if VL
+        /// <summary>
+        /// Determines whether a <see cref="RecordField" /> is a match for a type member.
+        /// </summary>
+        /// <param name="field">
+        /// A record field.
+        /// </param>
+        /// <param name="property">
+        /// The member to compare.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if <paramref name="property" /> is a match; <c>false</c> otherwise.
+        /// </returns>
+        protected virtual bool IsMatch(RecordField field, IVLPropertyInfo property)
+        {
+            return field.Name == property.Name;
+        }
+#endif
         /// <summary>
         /// Determines whether a <see cref="RecordField" /> is a match for a type member.
         /// </summary>
