@@ -8,6 +8,10 @@ namespace Chr.Avro.Serialization
     using System.Text.Json;
     using Chr.Avro.Abstract;
     using Microsoft.CSharp.RuntimeBinder;
+#if VL
+    using VL.Core;
+    using VL.Core.CompilerServices;
+#endif
 
     using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
 
@@ -92,6 +96,78 @@ namespace Chr.Avro.Serialization
 
                         var getUnknownRecordFieldException = typeof(JsonExceptionHelper)
                             .GetMethod(nameof(JsonExceptionHelper.GetUnknownRecordFieldException));
+
+#if VL
+                        if (typeof(IVLObject).IsAssignableFrom(underlying))
+                        {
+                            var ctor = underlying.GetConstructors().FirstOrDefault();
+                            var create = underlying.GetMethod("__Create__");
+
+                            var parameters = create.GetParameters().Where(parameter => parameter.Name != "Node_Context");
+
+                            // map constructor parameters to fields:
+                            var mapping = recordSchema.Fields
+                                .Select(field =>
+                                {
+                                    // there will be a match or we wouldn’t have made it this far:
+                                    var match = parameters.First(parameter => parameter.Name.Replace("_In", String.Empty) == (field.Name));
+                                    var parameter = Expression.Parameter(match.ParameterType);
+
+                                    return (
+                                        Field: field,
+                                        Match: match,
+                                        Parameter: parameter,
+                                        Assignment: (Expression)Expression.Block(
+                                            Expression.Call(context.Reader, read),
+                                            Expression.Assign(
+                                                parameter,
+                                                DeserializerBuilder.BuildExpression(match.ParameterType, field.Type, context))));
+                                })
+                                .ToDictionary(r => r.Match);
+
+                            expression = Expression.Block(
+                                mapping
+                                    .Select(d => d.Value.Parameter),
+                                Expression.IfThen(
+                                    Expression.NotEqual(
+                                        Expression.Property(context.Reader, tokenType),
+                                        Expression.Constant(JsonTokenType.StartObject)),
+                                    Expression.Throw(
+                                        Expression.Call(
+                                            null,
+                                            getUnexpectedTokenException,
+                                            context.Reader,
+                                            Expression.Constant(new[] { JsonTokenType.StartObject })))),
+                                Expression.Loop(
+                                    Expression.Block(
+                                        Expression.Call(context.Reader, read),
+                                        Expression.IfThen(
+                                            Expression.Equal(
+                                                Expression.Property(context.Reader, tokenType),
+                                                Expression.Constant(JsonTokenType.EndObject)),
+                                            Expression.Break(loop)),
+                                        Expression.Switch(
+                                            Expression.Call(context.Reader, getString),
+                                            Expression.Throw(
+                                                Expression.Call(
+                                                    null,
+                                                    getUnknownRecordFieldException,
+                                                    context.Reader)),
+                                            mapping
+                                                .Select(pair =>
+                                                    Expression.SwitchCase(
+                                                        Expression.Block(pair.Value.Assignment, Expression.Empty()),
+                                                        Expression.Constant(pair.Value.Field.Name)))
+                                                .ToArray())),
+                                    loop),
+                                Expression.New(
+                                    ctor,
+                                    parameters
+                                        .Select(parameter => mapping.ContainsKey(parameter)
+                                            ? (Expression)mapping[parameter].Parameter
+                                            : Expression.Constant(parameter.DefaultValue))));
+                        }
+#endif
 
                         if (GetRecordConstructor(underlying, recordSchema) is ConstructorInfo constructor)
                         {

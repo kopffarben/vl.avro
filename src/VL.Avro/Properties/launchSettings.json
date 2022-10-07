@@ -5,9 +5,9 @@
     },
     "VVVV": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\vvvv\\vvvv_gamma_2021.4.11-1152-g29d61bbe61\\vvvv.exe",
-      "commandLineArgs": "-o avro_01.vl",
-      "workingDirectory": "D:\\###Onedrive\\OneDrive\\_DEV\\_EDemokratie\\vl.avro\\src\\VL.Avro"
+      "executablePath": "C:\\Program Files\\vvvv\\vvvv_gamma_2022.5.0-0258-g07680ccc6f\\vvvv.exe",
+      "commandLineArgs": "-o \"E:\\OneDrive\\_DEV\\_EDemokratie\\vl.avro\\src\\VL.Avro\\avro_01.vl\"",
+      "workingDirectory": "E:\\OneDrive\\_DEV\\_EDemokratie\\vl.avro\\src\\VL.Avro"
     }
   }
 }
